@@ -8,34 +8,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "데이터가 없습니다" }, { status: 400 });
     }
 
-    const created = await prisma.codeRequest.createMany({
-      data: rows.map((r: Record<string, unknown>) => ({
-        productName:     String(r.productName ?? ""),
-        category:        String(r.category ?? ""),
-        storageType:     String(r.storageType ?? "실온"),
-        supplierName:    String(r.supplierName ?? ""),
-        supplierContact: r.supplierContact ? String(r.supplierContact) : null,
-        supplierPhone:   r.supplierPhone   ? String(r.supplierPhone)   : null,
-        supplierEmail:   r.supplierEmail   ? String(r.supplierEmail)   : null,
-        shelfLife:       r.shelfLife       ? String(r.shelfLife)       : null,
-        leadTime:        r.leadTime        ? Number(r.leadTime)        : null,
-        monthlyUsage:    r.monthlyUsage    ? Number(r.monthlyUsage)    : null,
-        initialOrderQty: r.initialOrderQty ? Number(r.initialOrderQty) : null,
-        cjDeliveryDate:  r.cjDeliveryDate  ? new Date(String(r.cjDeliveryDate)) : null,
-        taxType:         r.taxType         ? String(r.taxType)         : null,
-        unitWeight:      r.unitWeight      ? Number(r.unitWeight)      : null,
-        packBoxQty:      r.packBoxQty      ? Number(r.packBoxQty)      : null,
-        requestType:     String(r.requestType  ?? "NEW"),
-        requestTeam:     String(r.requestTeam  ?? ""),
-        requesterName:   String(r.requesterName ?? ""),
-        note:            r.note ? String(r.note) : null,
-        status:          "DRAFT",
-      })),
+    const toData = (r: Record<string, unknown>) => ({
+      productName:     String(r.productName ?? ""),
+      category:        String(r.category ?? ""),
+      storageType:     String(r.storageType ?? "실온"),
+      supplierName:    String(r.supplierName ?? ""),
+      supplierContact: r.supplierContact ? String(r.supplierContact) : null,
+      supplierPhone:   r.supplierPhone   ? String(r.supplierPhone)   : null,
+      supplierEmail:   r.supplierEmail   ? String(r.supplierEmail)   : null,
+      shelfLife:       r.shelfLife       ? String(r.shelfLife)       : null,
+      leadTime:        r.leadTime        ? Number(r.leadTime)        : null,
+      monthlyUsage:    r.monthlyUsage    ? Number(r.monthlyUsage)    : null,
+      initialOrderQty: r.initialOrderQty ? Number(r.initialOrderQty) : null,
+      cjDeliveryDate:  r.cjDeliveryDate  ? new Date(String(r.cjDeliveryDate)) : null,
+      taxType:         r.taxType         ? String(r.taxType)         : null,
+      unitWeight:      r.unitWeight      ? Number(r.unitWeight)      : null,
+      packBoxQty:      r.packBoxQty      ? Number(r.packBoxQty)      : null,
+      requestType:     String(r.requestType  ?? "NEW"),
+      requestTeam:     String(r.requestTeam  ?? ""),
+      requesterName:   String(r.requesterName ?? ""),
+      note:            r.note ? String(r.note) : null,
+      status:          "DRAFT",
     });
 
-    return NextResponse.json({ count: created.count }, { status: 201 });
+    const results = await Promise.all(
+      rows.map((r: Record<string, unknown>) => prisma.codeRequest.create({ data: toData(r) }))
+    );
+
+    return NextResponse.json({ count: results.length }, { status: 201 });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "일괄 등록 실패", detail: String(e) }, { status: 500 });
+    return NextResponse.json({ error: "일괄 등록 실패" }, { status: 500 });
   }
 }
