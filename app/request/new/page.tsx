@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import ExcelUpload from "@/components/ExcelUpload";
 
 interface Project {
   id: number;
@@ -40,9 +41,11 @@ const INITIAL: FormData = {
 };
 
 export default function NewRequestPage() {
+  const [tab, setTab] = useState<"manual" | "excel">("manual");
   const [form, setForm] = useState<FormData>(INITIAL);
   const [projects, setProjects] = useState<Project[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [bulkResult, setBulkResult] = useState<number | null>(null);
   const [myRequests, setMyRequests] = useState<{ id: number; productName: string; status: string; receivedDate: string }[]>([]);
 
   useEffect(() => {
@@ -106,13 +109,56 @@ export default function NewRequestPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-8">
+
+        {/* 탭 */}
+        <div className="flex gap-1 p-1 bg-amber-100 rounded-xl mb-6">
+          <button
+            onClick={() => setTab("manual")}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              tab === "manual" ? "bg-white text-[#6B4226] shadow-sm" : "text-amber-800 hover:bg-amber-50"
+            }`}
+          >
+            ✍️ 수기 작성
+          </button>
+          <button
+            onClick={() => setTab("excel")}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              tab === "excel" ? "bg-white text-[#6B4226] shadow-sm" : "text-amber-800 hover:bg-amber-50"
+            }`}
+          >
+            📊 엑셀 업로드
+          </button>
+        </div>
+
+        {/* 성공 메시지 */}
         {submitted && (
           <div className="mb-6 bg-green-100 border border-green-300 text-green-800 rounded-xl p-4 font-medium">
             ✅ 구매물류팀 단일 창구에 접수되었습니다. 처리 상황은 아래에서 확인하세요.
           </div>
         )}
+        {bulkResult !== null && (
+          <div className="mb-6 bg-green-100 border border-green-300 text-green-800 rounded-xl p-4 font-medium">
+            ✅ {bulkResult}건이 일괄 등록되었습니다!
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        {/* 엑셀 업로드 탭 */}
+        {tab === "excel" && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-amber-50">
+            <h2 className="font-bold text-[#6B4226] mb-5 text-base border-b border-amber-100 pb-3">
+              📊 엑셀 파일로 일괄 등록
+            </h2>
+            <ExcelUpload
+              onSuccess={(count) => {
+                setBulkResult(count);
+                setTimeout(() => setBulkResult(null), 5000);
+              }}
+            />
+          </div>
+        )}
+
+        {/* 수기 작성 탭 */}
+        {tab === "manual" && <form onSubmit={handleSubmit} className="space-y-8">
           {/* 섹션 A */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-amber-50">
             <h2 className="font-bold text-[#6B4226] mb-5 text-base border-b border-amber-100 pb-3">
@@ -249,7 +295,7 @@ export default function NewRequestPage() {
           <button type="submit" className="w-full bg-[#6B4226] text-white py-3 rounded-2xl font-bold text-base hover:bg-[#8B5A3A] transition-colors shadow-md">
             구매물류팀에 접수하기
           </button>
-        </form>
+        </form>}
 
         {/* 내 등록 이력 */}
         {myRequests.length > 0 && (
