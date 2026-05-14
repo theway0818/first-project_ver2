@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(created, { status: 201 });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "등록 실패", detail: String(e) }, { status: 500 });
+    return NextResponse.json({ error: "등록 실패" }, { status: 500 });
   }
 }
 
