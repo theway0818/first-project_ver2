@@ -4,7 +4,7 @@ import { PrismaClient } from "@/app/generated/prisma/client";
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 function createPrismaClient() {
-  const adapter = new PrismaNeonHttp(process.env.DATABASE_URL!.trim(), {});
+  const adapter = new PrismaNeonHttp(process.env.DATABASE_URL!.replace(/\s/g, ""), {});
   return new PrismaClient({ adapter });
 }
 
