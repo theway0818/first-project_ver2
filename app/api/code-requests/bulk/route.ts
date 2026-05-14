@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { apiLogger } from "@/lib/logger";
+
+const logger = apiLogger("api/code-requests/bulk");
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,9 +38,10 @@ export async function POST(req: NextRequest) {
       rows.map((r: Record<string, unknown>) => prisma.codeRequest.create({ data: toData(r) }))
     );
 
+    logger.info(`일괄 등록 완료 ${results.length}건`);
     return NextResponse.json({ count: results.length }, { status: 201 });
   } catch (e) {
-    console.error(e);
+    logger.error("일괄 등록 실패", e);
     return NextResponse.json({ error: "일괄 등록 실패" }, { status: 500 });
   }
 }
